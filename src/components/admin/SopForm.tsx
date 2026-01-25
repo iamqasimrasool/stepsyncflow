@@ -15,7 +15,7 @@ import FormError from "@/components/form/FormError";
 
 type Department = { id: string; name: string };
 
-type SopFormValues = z.infer<typeof sopSchema>;
+type SopFormValues = z.input<typeof sopSchema>;
 
 export default function SopForm({
   departments,

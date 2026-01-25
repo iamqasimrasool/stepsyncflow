@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import LoginForm from "@/components/auth/LoginForm";
 
@@ -17,7 +18,9 @@ export default function LoginPage() {
         <Card>
           <CardHeader className="text-lg font-semibold">Log in</CardHeader>
           <CardContent>
-            <LoginForm />
+            <Suspense fallback={<div className="text-sm text-muted-foreground">Loading...</div>}>
+              <LoginForm />
+            </Suspense>
             <p className="mt-4 text-sm text-muted-foreground">
               New here?{" "}
               <Link href="/signup" className="text-foreground underline">

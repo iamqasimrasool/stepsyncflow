@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { toast } from "sonner";
 import YouTubePlayer, { YouTubePlayerHandle } from "@/components/YouTubePlayer";
 import { Button } from "@/components/ui/button";
@@ -26,11 +27,8 @@ type Step = {
   timestamp: number;
 };
 
-type StepFormValues = {
-  heading: string;
-  body?: string;
-  timestamp: number;
-};
+type StepFormValues = z.input<typeof stepSchema>;
+type StepUpdateFormValues = z.input<typeof stepUpdateSchema>;
 
 export default function StepsEditor({
   sopId,
@@ -56,7 +54,7 @@ export default function StepsEditor({
     defaultValues: { heading: "", body: "", timestamp: 0 },
   });
 
-  const editForm = useForm<StepFormValues>({
+  const editForm = useForm<StepUpdateFormValues>({
     resolver: zodResolver(stepUpdateSchema),
     defaultValues: { heading: "", body: "", timestamp: 0 },
   });
@@ -109,7 +107,7 @@ export default function StepsEditor({
     });
   };
 
-  const handleEditSave = async (values: StepFormValues) => {
+  const handleEditSave = async (values: StepUpdateFormValues) => {
     if (!editingStep) return;
     setSaving(true);
     try {

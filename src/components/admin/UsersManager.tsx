@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,19 +25,8 @@ type UserRow = {
   departments: { department: Department }[];
 };
 
-type InviteValues = {
-  name: string;
-  email: string;
-  password: string;
-  role: Role;
-  departmentIds: string[];
-};
-
-type UpdateValues = {
-  name?: string;
-  role?: Role;
-  departmentIds?: string[];
-};
+type InviteValues = z.input<typeof userInviteSchema>;
+type UpdateValues = z.input<typeof userUpdateSchema>;
 
 export default function UsersManager({
   initialUsers,
