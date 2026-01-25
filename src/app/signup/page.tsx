@@ -8,7 +8,7 @@ export default function SignupPage() {
       <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-12">
         <div className="text-center">
           <Link href="/" className="text-2xl font-semibold">
-            StepSync
+            StepSync Flow
           </Link>
           <p className="mt-1 text-sm text-muted-foreground">
             Create your workspace in minutes.

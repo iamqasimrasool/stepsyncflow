@@ -47,7 +47,7 @@ export async function sendResetEmail(to: string, resetUrl: string) {
   await transporter.sendMail({
     from: SMTP_FROM,
     to,
-    subject: "Reset your StepSync password",
+    subject: "Reset your StepSync Flow password",
     text: [
       "We received a request to reset your password.",
       `Reset link: ${resetUrl}`,

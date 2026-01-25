@@ -11,7 +11,7 @@ export default function Home() {
       <header className="border-b">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
           <Link href="/" className="text-xl font-semibold">
-            StepSync
+            StepSync Flow
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/login" className="text-sm text-muted-foreground">
@@ -46,10 +46,10 @@ export default function Home() {
               Video-synced SOPs
             </p>
             <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
-              Turn YouTube videos into guided, clickable SOPs.
+              Turn videos into guided, clickable SOPs.
             </h1>
             <p className="text-lg text-muted-foreground">
-              StepSync keeps teams aligned with timestamped steps, mobile-first
+              StepSync Flow keeps teams aligned with timestamped steps, mobile-first
               playback, and department-level access.
             </p>
             <div className="flex flex-wrap gap-3">
@@ -97,6 +97,14 @@ export default function Home() {
             </Card>
           ))}
         </section>
+        <footer className="border-t pt-8 text-sm text-muted-foreground">
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+            <p>© 2026 StepSync Flow. All rights reserved.</p>
+            <Link href="/terms" className="underline">
+              Terms of Service
+            </Link>
+          </div>
+        </footer>
       </main>
     </div>
   );

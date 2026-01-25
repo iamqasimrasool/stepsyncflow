@@ -7,7 +7,7 @@ export default function TermsPage() {
       <header className="border-b">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4">
           <Link href="/" className="text-xl font-semibold">
-            StepSync
+            StepSync Flow
           </Link>
           <Link href="/pricing" className="text-sm text-muted-foreground">
             Pricing
@@ -25,7 +25,7 @@ export default function TermsPage() {
           <CardHeader className="text-lg font-semibold">Summary</CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <p>
-              These Terms govern access to StepSync. By using the service, you
+              These Terms govern access to StepSync Flow. By using the service, you
               agree to comply with these Terms and all applicable laws.
             </p>
             <p>

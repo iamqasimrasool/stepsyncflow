@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "StepSync",
+  title: "StepSync Flow",
   description: "Video-synced SOPs for modern teams.",
 };
 
