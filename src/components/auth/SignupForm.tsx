@@ -34,17 +34,31 @@ export default function SignupForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
-      if (!res.ok) throw new Error("Signup failed");
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        const message =
+          typeof data?.error === "string"
+            ? data.error
+            : "Signup failed";
+        throw new Error(message);
+      }
 
-      await signIn("credentials", {
+      const signInResult = await signIn("credentials", {
         redirect: false,
         email: values.email,
         password: values.password,
       });
+      if (signInResult?.error) {
+        throw new Error("Workspace created, but sign-in failed.");
+      }
       toast.success("Workspace created!");
       router.push("/app");
     } catch (error) {
-      toast.error("Could not create workspace");
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "Could not create workspace";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
