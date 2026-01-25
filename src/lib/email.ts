@@ -15,8 +15,12 @@ export function getAppUrl() {
   return "http://localhost:3000";
 }
 
+export function isEmailConfigured() {
+  return Boolean(SMTP_HOST && SMTP_PORT && SMTP_FROM);
+}
+
 function getTransporter() {
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_FROM) {
+  if (!isEmailConfigured()) {
     return null;
   }
 

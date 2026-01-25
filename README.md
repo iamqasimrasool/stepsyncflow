@@ -32,6 +32,7 @@ SMTP_USER="username"
 SMTP_PASS="password"
 SMTP_SECURE="false"
 SMTP_FROM="StepSync <no-reply@example.com>"
+ALLOW_RESET_LINK_RESPONSE="false"
 ```
 
 3. Run database migrations and seed demo data:

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createHash, randomBytes } from "crypto";
 import { db } from "@/lib/db";
 import { forgotPasswordSchema } from "@/lib/validators";
-import { getAppUrl, sendResetEmail } from "@/lib/email";
+import { getAppUrl, isEmailConfigured, sendResetEmail } from "@/lib/email";
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
@@ -38,11 +38,20 @@ export async function POST(request: Request) {
 
   const resetUrl = `${getAppUrl()}/reset-password?token=${token}`;
 
-  try {
-    await sendResetEmail(user.email, resetUrl);
-  } catch (error) {
+  if (isEmailConfigured()) {
+    try {
+      await sendResetEmail(user.email, resetUrl);
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Email could not be sent." },
+        { status: 500 }
+      );
+    }
+  } else if (process.env.ALLOW_RESET_LINK_RESPONSE === "true") {
+    return NextResponse.json({ ok: true, resetUrl });
+  } else {
     return NextResponse.json(
-      { error: "Email could not be sent." },
+      { error: "Email is not configured." },
       { status: 500 }
     );
   }

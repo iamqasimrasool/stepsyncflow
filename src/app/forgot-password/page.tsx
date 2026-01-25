@@ -16,6 +16,7 @@ type ForgotValues = z.input<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
+  const [resetUrl, setResetUrl] = useState<string | null>(null);
   const form = useForm<ForgotValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: "" },
@@ -29,13 +30,18 @@ export default function ForgotPasswordPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
+      const data = await res.json().catch(() => null);
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
         const message =
           typeof data?.error === "string"
             ? data.error
             : "Could not send reset email.";
         throw new Error(message);
+      }
+      if (typeof data?.resetUrl === "string") {
+        setResetUrl(data.resetUrl);
+      } else {
+        setResetUrl(null);
       }
       toast.success("Check your email for a reset link.");
       form.reset({ email: "" });
@@ -73,6 +79,14 @@ export default function ForgotPasswordPage() {
                 {loading ? "Sending..." : "Send reset link"}
               </Button>
             </form>
+            {resetUrl && (
+              <div className="mt-4 rounded-md border bg-muted/40 p-3 text-sm">
+                <p className="font-medium">Reset link</p>
+                <a className="break-all text-foreground underline" href={resetUrl}>
+                  {resetUrl}
+                </a>
+              </div>
+            )}
             <p className="mt-4 text-sm text-muted-foreground">
               Remembered your password?{" "}
               <Link href="/login" className="text-foreground underline">
