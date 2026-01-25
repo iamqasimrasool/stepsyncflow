@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import FormError from "@/components/form/FormError";
 
 type Department = { id: string; name: string };
 
-type SopFormValues = typeof sopSchema._type;
+type SopFormValues = z.infer<typeof sopSchema>;
 
 export default function SopForm({
   departments,
