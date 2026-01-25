@@ -13,6 +13,15 @@ export const loginSchema = z.object({
   password: z.string().min(6),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(10),
+  password: z.string().min(8),
+});
+
 export const sopSchema = z.object({
   title: z.string().min(2),
   summary: z.string().optional().nullable(),

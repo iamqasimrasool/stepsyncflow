@@ -59,8 +59,22 @@ model User {
   createdAt    DateTime @default(now())
   org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   departments  UserDepartment[]
+  resetTokens  PasswordResetToken[]
 
   @@index([orgId])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model UserDepartment {

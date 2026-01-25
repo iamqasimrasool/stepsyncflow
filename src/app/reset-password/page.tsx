@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import LoginForm from "@/components/auth/LoginForm";
+import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-muted/30">
       <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-12">
@@ -12,25 +12,19 @@ export default function LoginPage() {
             StepSync
           </Link>
           <p className="mt-1 text-sm text-muted-foreground">
-            Sign in to your workspace.
+            Set a new password for your account.
           </p>
         </div>
         <Card>
-          <CardHeader className="text-lg font-semibold">Log in</CardHeader>
+          <CardHeader className="text-lg font-semibold">Reset password</CardHeader>
           <CardContent>
             <Suspense fallback={<div className="text-sm text-muted-foreground">Loading...</div>}>
-              <LoginForm />
+              <ResetPasswordForm />
             </Suspense>
             <p className="mt-4 text-sm text-muted-foreground">
-              New here?{" "}
-              <Link href="/signup" className="text-foreground underline">
-                Create an account
-              </Link>
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Forgot your password?{" "}
-              <Link href="/forgot-password" className="text-foreground underline">
-                Reset it here
+              Remembered your password?{" "}
+              <Link href="/login" className="text-foreground underline">
+                Back to login
               </Link>
             </p>
           </CardContent>
@@ -39,3 +33,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

@@ -23,8 +23,15 @@ npm install
 
 ```bash
 DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/stepsync"
+DIRECT_URL="postgresql://USER:PASSWORD@localhost:5432/stepsync"
 NEXTAUTH_SECRET="replace-with-random-secret"
 NEXTAUTH_URL="http://localhost:3000"
+SMTP_HOST="smtp.example.com"
+SMTP_PORT="587"
+SMTP_USER="username"
+SMTP_PASS="password"
+SMTP_SECURE="false"
+SMTP_FROM="StepSync <no-reply@example.com>"
 ```
 
 3. Run database migrations and seed demo data:
