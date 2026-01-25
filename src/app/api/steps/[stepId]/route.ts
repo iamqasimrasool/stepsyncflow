@@ -34,7 +34,6 @@ export async function PUT(request: Request, { params }: Params) {
       heading: parsed.data.heading,
       body: parsed.data.body ?? undefined,
       timestamp: parsed.data.timestamp,
-      order: parsed.data.order,
     },
   });
 
