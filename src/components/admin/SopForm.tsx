@@ -14,14 +14,7 @@ import FormError from "@/components/form/FormError";
 
 type Department = { id: string; name: string };
 
-type SopFormValues = {
-  title: string;
-  summary?: string | null;
-  departmentId: string;
-  videoType: VideoType;
-  videoUrl: string;
-  isPublished?: boolean;
-};
+type SopFormValues = typeof sopSchema._type;
 
 export default function SopForm({
   departments,
