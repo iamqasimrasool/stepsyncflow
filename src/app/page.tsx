@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function Home() {
+  const heroVideoUrl =
+    "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4";
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -22,7 +25,22 @@ export default function Home() {
       </header>
 
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 py-12">
-        <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="relative overflow-hidden rounded-3xl border bg-muted/20">
+          <div className="absolute inset-0">
+            <video
+              className="h-full w-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="none"
+              aria-hidden="true"
+            >
+              <source src={heroVideoUrl} type="video/mp4" />
+            </video>
+            <div className="absolute inset-0 bg-background/70" />
+          </div>
+          <div className="relative z-10 grid gap-8 p-8 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-6">
             <p className="text-sm font-semibold uppercase text-muted-foreground">
               Video-synced SOPs
@@ -43,7 +61,7 @@ export default function Home() {
               </Button>
             </div>
           </div>
-          <Card className="border-dashed">
+          <Card className="border-dashed bg-background/80">
             <CardContent className="space-y-3 p-6">
               <p className="text-sm font-medium">What teams love</p>
               <ul className="space-y-2 text-sm text-muted-foreground">
@@ -53,6 +71,7 @@ export default function Home() {
               </ul>
             </CardContent>
           </Card>
+          </div>
         </section>
 
         <section className="grid gap-6 md:grid-cols-3">
