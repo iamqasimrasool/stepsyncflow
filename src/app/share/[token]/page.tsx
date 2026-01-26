@@ -18,7 +18,8 @@ export default async function SharePage({ params }: Params) {
     notFound();
   }
 
-  const accessCookie = cookies().get(`share_access_${token}`)?.value;
+  const cookieStore = await cookies();
+  const accessCookie = cookieStore.get(`share_access_${token}`)?.value;
   const hasAccess = !shareLink.passwordHash || accessCookie === "true";
 
   return (
