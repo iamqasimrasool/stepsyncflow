@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import SectionShareLinkManager from "@/components/admin/SectionShareLinkManager";
 
 type Department = { id: string; name: string };
 type Section = { id: string; title: string; order: number; departmentId: string };
@@ -250,6 +251,7 @@ export default function SopsOrganizer({
                 </Button>
               </div>
             </div>
+            <SectionShareLinkManager sectionId={section.id} />
 
             <div className="space-y-2">
               {sectionSops.map((sop, sopIndex) => (

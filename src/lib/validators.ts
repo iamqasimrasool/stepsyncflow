@@ -94,6 +94,11 @@ export const sopShareLinkSchema = z.object({
   password: z.string().optional().nullable(),
 });
 
+export const sectionShareLinkSchema = z.object({
+  enabled: z.boolean().optional(),
+  password: z.string().optional().nullable(),
+});
+
 export const departmentSchema = z.object({
   name: z.string().min(2),
 });

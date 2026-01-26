@@ -123,6 +123,7 @@ model SOPSection {
   order        Int      @default(0)
   createdAt    DateTime @default(now())
   department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  shareLink    SOPSectionShareLink?
   sops         SOP[]
 
   @@unique([departmentId, title])
@@ -183,4 +184,17 @@ model SOPShareLink {
   sop          SOP      @relation(fields: [sopId], references: [id], onDelete: Cascade)
 
   @@index([sopId])
+}
+
+model SOPSectionShareLink {
+  id           String   @id @default(cuid())
+  sectionId    String   @unique
+  token        String   @unique
+  enabled      Boolean  @default(false)
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  section      SOPSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@index([sectionId])
 }
