@@ -155,10 +155,21 @@ model SOPComment {
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   parent    SOPComment? @relation("SOPCommentToSOPComment", fields: [parentId], references: [id], onDelete: Cascade)
   replies   SOPComment[] @relation("SOPCommentToSOPComment")
+  edits     SOPCommentEdit[]
 
   @@index([sopId])
   @@index([authorId])
   @@index([parentId])
+}
+
+model SOPCommentEdit {
+  id        String   @id @default(cuid())
+  commentId String
+  body      String
+  editedAt  DateTime @default(now())
+  comment   SOPComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@index([commentId])
 }
 
 model SOPShareLink {

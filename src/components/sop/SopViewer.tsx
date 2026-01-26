@@ -35,6 +35,7 @@ export default function SopViewer({
   );
   const lastActiveRef = useRef<string | null>(sop.steps[0]?.id ?? null);
   const stepRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [commentsExpanded, setCommentsExpanded] = useState(false);
 
   const sortedSteps = useMemo(
     () => [...sop.steps].sort((a, b) => a.order - b.order),
@@ -87,6 +88,21 @@ export default function SopViewer({
             <p className="mt-1 text-sm text-muted-foreground">{sop.summary}</p>
           )}
         </div>
+        {enableComments && (
+          <SopComments
+            sopId={sop.id}
+            getCurrentTime={getCurrentTime}
+            onSeek={(seconds) => {
+              playerRef.current?.seekTo(seconds);
+              playerRef.current?.playVideo();
+            }}
+            listVisible={commentsExpanded}
+            onToggleList={() => setCommentsExpanded((prev) => !prev)}
+          />
+        )}
+        <div className="pt-2 text-sm font-semibold text-muted-foreground">
+          Workflow Steps
+        </div>
         {sortedSteps.map((step) => (
           <button
             key={step.id}
@@ -111,20 +127,10 @@ export default function SopViewer({
           </button>
         ))}
       </div>
-      <div className="order-1 flex h-full flex-col gap-4 overflow-y-auto md:order-2 md:pr-2">
+      <div className="order-1 flex h-full flex-col gap-4 md:order-2 md:pr-2">
         <div className="glass-panel sticky top-20 rounded-2xl p-3 md:static md:border-0 md:bg-transparent md:p-0 md:shadow-none">
           <YouTubePlayer ref={playerRef} videoUrl={sop.videoUrl} />
         </div>
-        {enableComments && (
-          <SopComments
-            sopId={sop.id}
-            getCurrentTime={getCurrentTime}
-            onSeek={(seconds) => {
-              playerRef.current?.seekTo(seconds);
-              playerRef.current?.playVideo();
-            }}
-          />
-        )}
       </div>
     </div>
   );

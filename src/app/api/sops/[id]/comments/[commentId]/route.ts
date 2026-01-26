@@ -37,15 +37,31 @@ export async function PUT(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const updated = await db.sOPComment.update({
-    where: { id: comment.id },
-    data: {
-      body: parsed.data.body,
-      editedAt: new Date(),
-    },
-    include: {
-      author: { select: { id: true, name: true, email: true, avatarUrl: true } },
-    },
+  const updated = await db.$transaction(async (tx) => {
+    await tx.sOPCommentEdit.create({
+      data: {
+        commentId: comment.id,
+        body: comment.body,
+        editedAt: new Date(),
+      },
+    });
+
+    return tx.sOPComment.update({
+      where: { id: comment.id },
+      data: {
+        body: parsed.data.body,
+        editedAt: new Date(),
+      },
+      include: {
+        author: {
+          select: { id: true, name: true, email: true, avatarUrl: true },
+        },
+        edits: {
+          select: { id: true, body: true, editedAt: true },
+          orderBy: { editedAt: "desc" },
+        },
+      },
+    });
   });
 
   return NextResponse.json({ comment: updated });

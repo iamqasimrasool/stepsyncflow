@@ -25,6 +25,7 @@ export async function GET(_request: Request, { params }: Params) {
     where: { sopId: sop.id },
     include: {
       author: { select: { id: true, name: true, email: true, avatarUrl: true } },
+      edits: { select: { id: true, body: true, editedAt: true }, orderBy: { editedAt: "desc" } },
     },
     orderBy: { createdAt: "asc" },
   });
@@ -72,6 +73,7 @@ export async function POST(request: Request, { params }: Params) {
     },
     include: {
       author: { select: { id: true, name: true, email: true, avatarUrl: true } },
+      edits: { select: { id: true, body: true, editedAt: true }, orderBy: { editedAt: "desc" } },
     },
   });
 

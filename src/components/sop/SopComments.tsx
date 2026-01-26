@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { toast } from "sonner";
+import { Link2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -21,6 +23,7 @@ type SopComment = {
   editedAt: string | null;
   createdAt: string;
   author: CommentAuthor;
+  edits?: { id: string; body: string; editedAt: string }[];
 };
 
 function formatTimestamp(seconds: number) {
@@ -29,17 +32,31 @@ function formatTimestamp(seconds: number) {
   return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 }
 
+function formatDateTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
 export default function SopComments({
   sopId,
   getCurrentTime,
   onSeek,
+  listVisible = true,
+  onToggleList,
 }: {
   sopId: string;
   getCurrentTime: () => number;
   onSeek: (seconds: number) => void;
+  listVisible?: boolean;
+  onToggleList?: () => void;
 }) {
   const { data: session } = useSession();
   const currentUserId = session?.user?.id ?? null;
+  const pathname = usePathname();
   const [comments, setComments] = useState<SopComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [newBody, setNewBody] = useState("");
@@ -51,6 +68,8 @@ export default function SopComments({
   const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>(
     {}
   );
+  const [expandedEdits, setExpandedEdits] = useState<Record<string, boolean>>({});
+  const replyRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -68,6 +87,11 @@ export default function SopComments({
     };
     load();
   }, [sopId]);
+
+  useEffect(() => {
+    if (!replyingId) return;
+    replyRef.current?.focus();
+  }, [replyingId]);
 
   const rootComments = useMemo(
     () =>
@@ -149,6 +173,17 @@ export default function SopComments({
     }
   };
 
+  const handleCopyLink = async (commentId: string) => {
+    try {
+      const base = window.location.origin;
+      const link = `${base}${pathname}#comment-${commentId}`;
+      await navigator.clipboard.writeText(link);
+      toast.success("Comment link copied");
+    } catch (error) {
+      toast.error("Could not copy link");
+    }
+  };
+
   const getInitials = (author: CommentAuthor) => {
     const base = author.name?.trim() || author.email;
     return base
@@ -175,20 +210,26 @@ export default function SopComments({
   );
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-2xl border border-white/60 bg-white/80 p-4">
+    <div className="space-y-3">
+      <div className="rounded-2xl border border-white/60 bg-white/80 p-4 soft-shadow">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Comments</h3>
           <span className="text-xs text-muted-foreground">
             {comments.length} total
           </span>
         </div>
-        <div className="mt-3 space-y-2">
+        <div className="mt-2 space-y-2">
           <Textarea
             placeholder="Add a comment..."
-            rows={3}
+            rows={2}
             value={newBody}
             onChange={(event) => setNewBody(event.target.value)}
+            onKeyDown={(event) => {
+              if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+                event.preventDefault();
+                handleCreate(null);
+              }
+            }}
           />
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Timestamp: {formatTimestamp(Math.floor(getCurrentTime()))}</span>
@@ -204,25 +245,42 @@ export default function SopComments({
         </div>
       </div>
 
-      {loading && (
-        <div className="rounded-2xl border border-white/60 bg-white/80 p-4 text-sm text-muted-foreground">
+      {onToggleList && (
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            className="text-sm font-semibold text-primary underline-offset-2 hover:underline"
+            onClick={onToggleList}
+          >
+            {listVisible ? "Hide comments" : "View comments"}
+          </button>
+        </div>
+      )}
+
+      {loading && listVisible && (
+        <div className="rounded-2xl border border-white/60 bg-white/80 p-4 text-sm text-muted-foreground soft-shadow">
           Loading comments...
         </div>
       )}
 
-      {!loading && !comments.length && (
-        <div className="rounded-2xl border border-white/60 bg-white/80 p-4 text-sm text-muted-foreground">
+      {!loading && !comments.length && listVisible && (
+        <div className="rounded-2xl border border-white/60 bg-white/80 p-4 text-sm text-muted-foreground soft-shadow">
           No comments yet. Be the first to add one.
         </div>
       )}
 
-      <div className="space-y-4">
-        {rootComments.map((comment) => {
-          const replies = repliesByParent.get(comment.id) ?? [];
-          const isOwner = currentUserId === comment.author.id;
-          const isExpanded = expandedReplies[comment.id] ?? false;
-          return (
-            <div key={comment.id} className="space-y-3 rounded-2xl border border-white/60 bg-white/80 p-4">
+      {listVisible && (
+        <div className="space-y-3">
+          {rootComments.map((comment) => {
+            const replies = repliesByParent.get(comment.id) ?? [];
+            const isOwner = currentUserId === comment.author.id;
+            const isExpanded = expandedReplies[comment.id] ?? false;
+            return (
+              <div
+                key={comment.id}
+                id={`comment-${comment.id}`}
+                className="space-y-3 rounded-2xl border border-white/60 bg-white/80 p-4 soft-shadow transition hover:-translate-y-0.5 hover:border-slate-200"
+              >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex gap-3">
                   <Avatar author={comment.author} />
@@ -230,49 +288,55 @@ export default function SopComments({
                     <p className="text-sm font-semibold">
                       {comment.author.name ?? comment.author.email}
                     </p>
-                    <button
-                      type="button"
-                      className="text-xs text-muted-foreground underline-offset-2 hover:underline"
-                      onClick={() => onSeek(comment.timestamp)}
-                    >
-                      {formatTimestamp(comment.timestamp)}
-                    </button>
-                    {comment.editedAt && (
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        Edited
-                      </span>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <button
+                        type="button"
+                        className="underline-offset-2 hover:underline"
+                        onClick={() => onSeek(comment.timestamp)}
+                      >
+                        {formatTimestamp(comment.timestamp)}
+                      </button>
+                      <span>{formatDateTime(comment.createdAt)}</span>
+                      {comment.editedAt && (
+                        <button
+                          type="button"
+                          className="underline-offset-2 hover:underline"
+                          onClick={() =>
+                            setExpandedEdits((prev) => ({
+                              ...prev,
+                              [comment.id]: !prev[comment.id],
+                            }))
+                          }
+                        >
+                          Edited
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-1">
                   {isOwner && (
                     <Button
                       type="button"
-                      size="sm"
+                      size="icon"
                       variant="ghost"
                       onClick={() => {
                         setEditingId(comment.id);
                         setEditingBody(comment.body);
                       }}
+                      aria-label="Edit comment"
                     >
-                      Edit
+                      <Pencil className="h-4 w-4" />
                     </Button>
                   )}
                   <Button
                     type="button"
-                    size="sm"
+                    size="icon"
                     variant="ghost"
-                    onClick={() => {
-                      setExpandedReplies((prev) => ({
-                        ...prev,
-                        [comment.id]: true,
-                      }));
-                      setReplyingId((prev) =>
-                        prev === comment.id ? null : comment.id
-                      );
-                    }}
+                    onClick={() => handleCopyLink(comment.id)}
+                    aria-label="Copy comment link"
                   >
-                    Reply
+                    <Link2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -310,31 +374,67 @@ export default function SopComments({
                 <p className="text-sm text-muted-foreground">{comment.body}</p>
               )}
 
-              {replies.length > 0 && (
-                <Button
+              {expandedEdits[comment.id] && comment.edits?.length ? (
+                <div className="space-y-2 rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
+                  {comment.edits.map((edit) => (
+                    <div key={edit.id}>
+                      <p className="text-xs">{formatDateTime(edit.editedAt)}</p>
+                      <p>{edit.body}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+                <button
                   type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={() =>
+                  className="underline-offset-2 hover:underline"
+                  onClick={() => {
                     setExpandedReplies((prev) => ({
                       ...prev,
-                      [comment.id]: !isExpanded,
-                    }))
-                  }
+                      [comment.id]: true,
+                    }));
+                    setReplyingId((prev) =>
+                      prev === comment.id ? null : comment.id
+                    );
+                  }}
                 >
-                  {isExpanded ? "Hide replies" : `Show replies (${replies.length})`}
-                </Button>
-              )}
+                  Reply
+                </button>
+                {replies.length > 0 && (
+                  <button
+                    type="button"
+                    className="underline-offset-2 hover:underline"
+                    onClick={() =>
+                      setExpandedReplies((prev) => ({
+                        ...prev,
+                        [comment.id]: !isExpanded,
+                      }))
+                    }
+                  >
+                    {isExpanded
+                      ? "Hide replies"
+                      : `Show replies (${replies.length})`}
+                  </button>
+                )}
+              </div>
 
               {isExpanded && (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {replyingId === comment.id && (
-                    <div className="space-y-2 rounded-xl border border-dashed p-3">
+                    <div className="space-y-2 rounded-lg border border-dashed p-3">
                       <Textarea
                         rows={2}
                         placeholder="Write a reply..."
+                        ref={replyRef}
                         value={replyBody}
                         onChange={(event) => setReplyBody(event.target.value)}
+                        onKeyDown={(event) => {
+                          if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+                            event.preventDefault();
+                            handleCreate(comment.id);
+                          }
+                        }}
                       />
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span>
@@ -353,12 +453,16 @@ export default function SopComments({
                   )}
 
                   {replies.length > 0 && (
-                    <div className="space-y-3 border-l border-dashed pl-4">
+                    <div className="space-y-2">
                       {replies.map((reply) => {
                         const replyOwner = currentUserId === reply.author.id;
                         const isEditing = editingId === reply.id;
                         return (
-                          <div key={reply.id} className="space-y-2">
+                          <div
+                            key={reply.id}
+                            id={`comment-${reply.id}`}
+                            className="space-y-3 rounded-2xl border border-white/60 bg-white/80 p-4 soft-shadow transition hover:-translate-y-0.5 hover:border-slate-200"
+                          >
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex gap-3">
                                 <Avatar author={reply.author} />
@@ -366,34 +470,56 @@ export default function SopComments({
                                   <p className="text-sm font-semibold">
                                     {reply.author.name ?? reply.author.email}
                                   </p>
-                                  <button
-                                    type="button"
-                                    className="text-xs text-muted-foreground underline-offset-2 hover:underline"
-                                    onClick={() => onSeek(reply.timestamp)}
-                                  >
-                                    {formatTimestamp(reply.timestamp)}
-                                  </button>
-                                  {reply.editedAt && (
-                                    <span className="ml-2 text-xs text-muted-foreground">
-                                      Edited
-                                    </span>
-                                  )}
+                                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                    <button
+                                      type="button"
+                                      className="underline-offset-2 hover:underline"
+                                      onClick={() => onSeek(reply.timestamp)}
+                                    >
+                                      {formatTimestamp(reply.timestamp)}
+                                    </button>
+                                    <span>{formatDateTime(reply.createdAt)}</span>
+                                    {reply.editedAt && (
+                                      <button
+                                        type="button"
+                                        className="underline-offset-2 hover:underline"
+                                        onClick={() =>
+                                          setExpandedEdits((prev) => ({
+                                            ...prev,
+                                            [reply.id]: !prev[reply.id],
+                                          }))
+                                        }
+                                      >
+                                        Edited
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                              <div className="flex gap-2">
+                              <div className="flex items-center gap-1">
                                 {replyOwner && (
                                   <Button
                                     type="button"
-                                    size="sm"
+                                    size="icon"
                                     variant="ghost"
                                     onClick={() => {
                                       setEditingId(reply.id);
                                       setEditingBody(reply.body);
                                     }}
+                                    aria-label="Edit reply"
                                   >
-                                    Edit
+                                    <Pencil className="h-4 w-4" />
                                   </Button>
                                 )}
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => handleCopyLink(reply.id)}
+                                  aria-label="Copy reply link"
+                                >
+                                  <Link2 className="h-4 w-4" />
+                                </Button>
                               </div>
                             </div>
                             {isEditing ? (
@@ -404,6 +530,12 @@ export default function SopComments({
                                   onChange={(event) =>
                                     setEditingBody(event.target.value)
                                   }
+                                  onKeyDown={(event) => {
+                                    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+                                      event.preventDefault();
+                                      handleEdit(reply.id);
+                                    }
+                                  }}
                                 />
                                 <div className="flex gap-2">
                                   <Button
@@ -432,6 +564,18 @@ export default function SopComments({
                                 {reply.body}
                               </p>
                             )}
+                            {expandedEdits[reply.id] && reply.edits?.length ? (
+                              <div className="space-y-2 rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
+                                {reply.edits.map((edit) => (
+                                  <div key={edit.id}>
+                                    <p className="text-xs">
+                                      {formatDateTime(edit.editedAt)}
+                                    </p>
+                                    <p>{edit.body}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
                           </div>
                         );
                       })}
@@ -439,10 +583,11 @@ export default function SopComments({
                   )}
                 </div>
               )}
-            </div>
-          );
-        })}
-      </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
