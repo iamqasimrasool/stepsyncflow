@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,19 +14,23 @@ import { VideoType } from "@prisma/client";
 import FormError from "@/components/form/FormError";
 
 type Department = { id: string; name: string };
+type Section = { id: string; title: string; departmentId: string };
 
 type SopFormValues = z.input<typeof sopSchema>;
 
 export default function SopForm({
   departments,
+  sections,
   initial,
 }: {
   departments: Department[];
+  sections: Section[];
   initial?: {
     id: string;
     title: string;
     summary: string | null;
     departmentId: string;
+    sectionId: string | null;
     videoType: VideoType;
     videoUrl: string;
     isPublished: boolean;
@@ -40,21 +44,42 @@ export default function SopForm({
       title: initial?.title ?? "",
       summary: initial?.summary ?? "",
       departmentId: initial?.departmentId ?? departments[0]?.id ?? "",
+      sectionId: initial?.sectionId ?? "",
       videoType: initial?.videoType ?? VideoType.YOUTUBE,
       videoUrl: initial?.videoUrl ?? "",
       isPublished: initial?.isPublished ?? true,
     },
   });
 
+  const selectedDepartmentId = form.watch("departmentId");
+  const selectedSectionId = form.watch("sectionId");
+  const availableSections = sections.filter(
+    (section) => section.departmentId === selectedDepartmentId
+  );
+
+  useEffect(() => {
+    if (!selectedSectionId) return;
+    const exists = availableSections.some(
+      (section) => section.id === selectedSectionId
+    );
+    if (!exists) {
+      form.setValue("sectionId", "");
+    }
+  }, [availableSections, form, selectedSectionId]);
+
   const onSubmit = async (values: SopFormValues) => {
     setSaving(true);
     try {
+      const payload = {
+        ...values,
+        sectionId: values.sectionId ? values.sectionId : null,
+      };
       const res = await fetch(
         initial ? `/api/sops/${initial.id}` : "/api/sops",
         {
           method: initial ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
+          body: JSON.stringify(payload),
         }
       );
 
@@ -98,6 +123,20 @@ export default function SopForm({
             ))}
           </select>
           <FormError message={form.formState.errors.departmentId?.message} />
+        </label>
+        <label className="space-y-2 text-sm">
+          <span className="text-muted-foreground">Section</span>
+          <select
+            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+            {...form.register("sectionId")}
+          >
+            <option value="">Unassigned</option>
+            {availableSections.map((section) => (
+              <option key={section.id} value={section.id}>
+                {section.title}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="space-y-2 text-sm">
           <span className="text-muted-foreground">Video Type</span>

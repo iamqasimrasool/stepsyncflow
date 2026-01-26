@@ -12,6 +12,12 @@ export default async function NewSopPage() {
       : { orgId: user.orgId, id: { in: user.departmentIds } },
     orderBy: { name: "asc" },
   });
+  const sections = await db.sOPSection.findMany({
+    where: {
+      departmentId: { in: departments.map((dept) => dept.id) },
+    },
+    orderBy: { order: "asc" },
+  });
 
   return (
     <div className="space-y-4">
@@ -21,7 +27,7 @@ export default async function NewSopPage() {
           Add the core SOP details. You can add steps after saving.
         </CardHeader>
         <CardContent>
-          <SopForm departments={departments} />
+          <SopForm departments={departments} sections={sections} />
         </CardContent>
       </Card>
     </div>

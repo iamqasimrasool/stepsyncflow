@@ -58,16 +58,55 @@ export async function PUT(request: Request, { params }: Params) {
     }
   }
 
+  const nextDepartmentId = parsed.data.departmentId ?? sop.departmentId;
+  const sectionProvided = parsed.data.sectionId !== undefined;
+  const nextSectionId = sectionProvided
+    ? parsed.data.sectionId ?? null
+    : parsed.data.departmentId
+      ? null
+      : sop.sectionId;
+
+  if (nextSectionId) {
+    const section = await db.sOPSection.findFirst({
+      where: { id: nextSectionId, departmentId: nextDepartmentId },
+    });
+    if (!section) {
+      return NextResponse.json({ error: "Section not found" }, { status: 404 });
+    }
+  }
+
+  const updateData: {
+    title?: string;
+    summary?: string | null;
+    departmentId?: string;
+    sectionId?: string | null;
+    order?: number;
+    videoType?: typeof sop.videoType;
+    videoUrl?: string;
+    isPublished?: boolean;
+  } = {
+    title: parsed.data.title,
+    summary: parsed.data.summary ?? undefined,
+    departmentId: parsed.data.departmentId,
+    videoType: parsed.data.videoType,
+    videoUrl: parsed.data.videoUrl,
+    isPublished: parsed.data.isPublished,
+  };
+
+  if (parsed.data.departmentId || sectionProvided) {
+    updateData.sectionId = nextSectionId;
+    if (nextDepartmentId !== sop.departmentId || nextSectionId !== sop.sectionId) {
+      const maxOrder = await db.sOP.aggregate({
+        where: { departmentId: nextDepartmentId, sectionId: nextSectionId },
+        _max: { order: true },
+      });
+      updateData.order = (maxOrder._max.order ?? -1) + 1;
+    }
+  }
+
   const updated = await db.sOP.update({
     where: { id },
-    data: {
-      title: parsed.data.title,
-      summary: parsed.data.summary ?? undefined,
-      departmentId: parsed.data.departmentId,
-      videoType: parsed.data.videoType,
-      videoUrl: parsed.data.videoUrl,
-      isPublished: parsed.data.isPublished,
-    },
+    data: updateData,
   });
 
   return NextResponse.json({ sop: updated });

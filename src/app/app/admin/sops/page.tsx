@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import SopsTable from "@/components/admin/SopsTable";
+import SopsOrganizer from "@/components/admin/SopsOrganizer";
 import { db } from "@/lib/db";
 import { requireAdminUser } from "@/lib/guards";
 import { isOrgWide } from "@/lib/rbac";
@@ -11,8 +11,25 @@ export default async function AdminSopsPage() {
     where: isOrgWide(user.role)
       ? { orgId: user.orgId }
       : { orgId: user.orgId, departmentId: { in: user.departmentIds } },
-    include: { department: true },
-    orderBy: { updatedAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      isPublished: true,
+      order: true,
+      sectionId: true,
+      departmentId: true,
+    },
+    orderBy: [{ section: { order: "asc" } }, { order: "asc" }, { updatedAt: "desc" }],
+  });
+  const departments = await db.department.findMany({
+    where: isOrgWide(user.role)
+      ? { orgId: user.orgId }
+      : { orgId: user.orgId, id: { in: user.departmentIds } },
+    orderBy: { name: "asc" },
+  });
+  const sections = await db.sOPSection.findMany({
+    where: { departmentId: { in: departments.map((dept) => dept.id) } },
+    orderBy: { order: "asc" },
   });
 
   return (
@@ -28,7 +45,7 @@ export default async function AdminSopsPage() {
           <Link href="/app/admin/sops/new">New SOP</Link>
         </Button>
       </div>
-      <SopsTable sops={sops} />
+      <SopsOrganizer departments={departments} sections={sections} sops={sops} />
     </div>
   );
 }

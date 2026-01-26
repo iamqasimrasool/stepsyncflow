@@ -26,6 +26,7 @@ export const sopSchema = z.object({
   title: z.string().min(2),
   summary: z.string().optional().nullable(),
   departmentId: z.string().min(1),
+  sectionId: z.string().min(1).optional().nullable(),
   videoType: z.nativeEnum(VideoType).default(VideoType.YOUTUBE),
   videoUrl: z.string().min(3),
   isPublished: z.boolean().optional(),
@@ -45,6 +46,32 @@ export const stepUpdateSchema = stepSchema.partial();
 
 export const reorderStepsSchema = z.object({
   steps: z.array(
+    z.object({
+      id: z.string().min(1),
+      order: z.number().int().nonnegative(),
+    })
+  ),
+});
+
+export const sopSectionSchema = z.object({
+  departmentId: z.string().min(1),
+  title: z.string().min(2),
+});
+
+export const reorderSectionsSchema = z.object({
+  departmentId: z.string().min(1),
+  sections: z.array(
+    z.object({
+      id: z.string().min(1),
+      order: z.number().int().nonnegative(),
+    })
+  ),
+});
+
+export const reorderSopsSchema = z.object({
+  departmentId: z.string().min(1),
+  sectionId: z.string().min(1).optional().nullable(),
+  sops: z.array(
     z.object({
       id: z.string().min(1),
       order: z.number().int().nonnegative(),

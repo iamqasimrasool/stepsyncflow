@@ -26,6 +26,12 @@ export default async function EditSopPage({ params }: Params) {
       : { orgId: user.orgId, id: { in: user.departmentIds } },
     orderBy: { name: "asc" },
   });
+  const sections = await db.sOPSection.findMany({
+    where: {
+      departmentId: { in: departments.map((dept) => dept.id) },
+    },
+    orderBy: { order: "asc" },
+  });
 
   return (
     <div className="space-y-6">
@@ -35,7 +41,7 @@ export default async function EditSopPage({ params }: Params) {
           Update the SOP details and publishing status.
         </CardHeader>
         <CardContent>
-          <SopForm departments={departments} initial={sop} />
+          <SopForm departments={departments} sections={sections} initial={sop} />
         </CardContent>
       </Card>
       <StepsEditor

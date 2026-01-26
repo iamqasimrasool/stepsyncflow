@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { useHeader } from "@/components/layout/HeaderContext";
+import SignOutButton from "@/components/auth/SignOutButton";
 
 export default function AppHeader({
   orgName,
@@ -63,6 +64,9 @@ export default function AppHeader({
               <User className="h-4 w-4" />
             </Link>
           )}
+          <div className="hidden sm:block">
+            <SignOutButton />
+          </div>
           <Link
             href="/app/search"
             className="flex items-center justify-center rounded-full border p-2 text-sm hover:bg-muted sm:hidden"
@@ -92,9 +96,12 @@ export default function AppHeader({
                     Flows
                   </Link>
                 )}
-                <Link href="/app/profile" className="block text-lg font-semibold">
-                  Admin
-                </Link>
+                {showAdmin && (
+                  <Link href="/app/profile" className="block text-lg font-semibold">
+                    Admin
+                  </Link>
+                )}
+                <SignOutButton />
               </SheetContent>
             </Sheet>
           )}

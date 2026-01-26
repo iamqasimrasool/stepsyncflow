@@ -43,6 +43,7 @@ model Department {
   createdAt DateTime @default(now())
   org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   users     UserDepartment[]
+  sections  SOPSection[]
   sops      SOP[]
 
   @@unique([orgId, name])
@@ -92,6 +93,8 @@ model SOP {
   id           String   @id @default(cuid())
   orgId        String
   departmentId String
+  sectionId    String?
+  order        Int      @default(0)
   title        String
   summary      String?
   videoType    VideoType @default(YOUTUBE)
@@ -101,9 +104,24 @@ model SOP {
   updatedAt    DateTime @updatedAt
   org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   department   Department   @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  section      SOPSection?  @relation(fields: [sectionId], references: [id], onDelete: SetNull)
   steps        SOPStep[]
 
   @@index([orgId])
+  @@index([departmentId])
+  @@index([sectionId])
+}
+
+model SOPSection {
+  id           String   @id @default(cuid())
+  departmentId String
+  title        String
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  sops         SOP[]
+
+  @@unique([departmentId, title])
   @@index([departmentId])
 }
 

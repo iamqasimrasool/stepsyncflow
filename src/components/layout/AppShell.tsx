@@ -14,12 +14,10 @@ export default function AppShell({
 }) {
   return (
     <HeaderProvider>
-      <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-b from-slate-50 via-white to-white">
+      <div className="flex min-h-screen flex-col bg-gradient-to-b from-slate-50 via-white to-white">
         <AppHeader orgName={orgName} showAdmin={canAccessAdmin(user)} />
         <div className="mx-auto flex w-full max-w-6xl flex-1 px-4 pb-24 pt-6 md:pb-6">
-          <main className="w-full flex-1 min-h-0 overflow-y-auto">
-            {children}
-          </main>
+          <main className="w-full flex-1">{children}</main>
         </div>
         <MobileNav user={user} />
       </div>

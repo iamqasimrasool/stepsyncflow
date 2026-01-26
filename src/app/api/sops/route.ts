@@ -15,7 +15,7 @@ export async function GET() {
       ? { orgId: user.orgId }
       : { orgId: user.orgId, departmentId: { in: user.departmentIds } },
     include: { department: true },
-    orderBy: { updatedAt: "desc" },
+    orderBy: [{ section: { order: "asc" } }, { order: "asc" }, { updatedAt: "desc" }],
   });
 
   return NextResponse.json({ sops });
@@ -44,10 +44,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const sectionId = parsed.data.sectionId ?? null;
+  if (sectionId) {
+    const section = await db.sOPSection.findFirst({
+      where: { id: sectionId, departmentId: department.id },
+    });
+    if (!section) {
+      return NextResponse.json({ error: "Section not found" }, { status: 404 });
+    }
+  }
+
+  const maxOrder = await db.sOP.aggregate({
+    where: { departmentId: department.id, sectionId },
+    _max: { order: true },
+  });
+
   const sop = await db.sOP.create({
     data: {
       orgId: user.orgId,
       departmentId: department.id,
+      sectionId,
+      order: (maxOrder._max.order ?? -1) + 1,
       title: parsed.data.title,
       summary: parsed.data.summary ?? null,
       videoType: parsed.data.videoType,
