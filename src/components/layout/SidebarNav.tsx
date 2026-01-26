@@ -1,43 +1,93 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Route, Shield } from "lucide-react";
+import { Building2, LayoutGrid, Route, Settings, Shield, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { canAccessAdmin, type SessionUser } from "@/lib/rbac";
+import {
+  canAccessAdmin,
+  canManageDepartments,
+  canManageSettings,
+  canManageUsers,
+  type SessionUser,
+} from "@/lib/rbac";
 
-const baseLinks = [
-  { href: "/app", label: "Home", icon: LayoutGrid },
-  { href: "/app/profile", label: "Admin", icon: Shield },
-];
+const baseLinks = [{ href: "/app", label: "Home", icon: LayoutGrid }];
 
 export default function SidebarNav({ user }: { user: SessionUser }) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
-  const links = [...baseLinks];
-  if (canAccessAdmin(user)) {
-    links.splice(1, 0, {
-      href: "/app/admin/sops",
-      label: "Flows",
-      icon: Route,
+  const [pinned, setPinned] = useState(false);
+  const [hovering, setHovering] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("sidebarPinned");
+    if (stored === "true") {
+      setPinned(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("sidebarPinned", pinned ? "true" : "false");
+  }, [pinned]);
+
+  const links = useMemo(() => {
+    const items = [...baseLinks];
+    if (canAccessAdmin(user)) {
+      items.push({
+        href: "/app/admin/sops",
+        label: "Flows",
+        icon: Route,
+      });
+    }
+    items.push({
+      href: "/app/profile",
+      label: "Profile",
+      icon: Shield,
     });
-  }
+    if (canManageSettings(user)) {
+      items.push({
+        href: "/app/admin/settings",
+        label: "Workspace",
+        icon: Settings,
+      });
+    }
+    if (canManageDepartments(user)) {
+      items.push({
+        href: "/app/admin/departments",
+        label: "Departments",
+        icon: Building2,
+      });
+    }
+    if (canManageUsers(user)) {
+      items.push({
+        href: "/app/admin/users",
+        label: "Users",
+        icon: Users,
+      });
+    }
+    return items;
+  }, [user]);
+
+  const collapsed = !pinned && !hovering;
 
   return (
     <aside
       className={cn(
-        "sticky top-24 hidden h-[calc(100vh-7rem)] flex-col gap-2 md:flex",
+        "sticky top-24 hidden h-[calc(100vh-7rem)] flex-col gap-2 transition-all md:flex",
         collapsed ? "w-16" : "w-56"
       )}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
     >
       <nav className="rounded-xl border bg-background p-2">
         <button
           type="button"
-          onClick={() => setCollapsed((prev) => !prev)}
+          onClick={() => setPinned((prev) => !prev)}
           className="mb-2 flex w-full items-center justify-center rounded-lg border px-2 py-2 text-xs text-muted-foreground hover:bg-muted"
+          aria-pressed={pinned}
         >
-          {collapsed ? "Expand" : "Collapse"}
+          {pinned ? "Unpin" : "Pin"}
         </button>
         {links.map((link) => {
           const Icon = link.icon;

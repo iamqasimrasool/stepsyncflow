@@ -32,19 +32,6 @@ export default function AppHeader({
               {orgName}
             </Link>
           </div>
-          <div className="hidden items-center gap-3 text-sm md:flex">
-            <Link href="/app" className="font-medium text-foreground/80 hover:text-foreground">
-              Home
-            </Link>
-            {showAdmin && (
-              <Link
-                href="/app/admin/sops"
-                className="font-medium text-foreground/80 hover:text-foreground"
-              >
-                Flows
-              </Link>
-            )}
-          </div>
         </div>
         <div className="hidden flex-1 md:block" />
         <div className="flex items-center gap-2">
@@ -85,17 +72,6 @@ export default function AppHeader({
                 <SheetHeader>
                   <SheetTitle>Navigation</SheetTitle>
                 </SheetHeader>
-                <Link href="/app" className="block text-lg font-semibold">
-                  Home
-                </Link>
-                {showAdmin && (
-                  <Link
-                    href="/app/admin/sops"
-                    className="block text-lg font-semibold"
-                  >
-                    Flows
-                  </Link>
-                )}
                 {showAdmin && (
                   <Link href="/app/profile" className="block text-lg font-semibold">
                     Admin
