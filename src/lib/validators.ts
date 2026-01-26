@@ -79,6 +79,21 @@ export const reorderSopsSchema = z.object({
   ),
 });
 
+export const sopCommentSchema = z.object({
+  body: z.string().min(1),
+  timestamp: z.number().int().nonnegative(),
+  parentId: z.string().min(1).optional().nullable(),
+});
+
+export const sopCommentUpdateSchema = z.object({
+  body: z.string().min(1),
+});
+
+export const sopShareLinkSchema = z.object({
+  enabled: z.boolean().optional(),
+  password: z.string().optional().nullable(),
+});
+
 export const departmentSchema = z.object({
   name: z.string().min(2),
 });
@@ -95,4 +110,13 @@ export const userUpdateSchema = z.object({
   name: z.string().min(2).optional(),
   role: z.nativeEnum(Role).optional(),
   departmentIds: z.array(z.string().min(1)).optional(),
+});
+
+export const profileUpdateSchema = z.object({
+  name: z.string().min(2).optional(),
+  avatarUrl: z
+    .string()
+    .url()
+    .optional()
+    .nullable(),
 });

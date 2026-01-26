@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import SopForm from "@/components/admin/SopForm";
+import ShareLinkManager from "@/components/admin/ShareLinkManager";
 import StepsEditor from "@/components/admin/StepsEditor";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { db } from "@/lib/db";
@@ -44,6 +45,7 @@ export default async function EditSopPage({ params }: Params) {
           <SopForm departments={departments} sections={sections} initial={sop} />
         </CardContent>
       </Card>
+      <ShareLinkManager sopId={sop.id} />
       <StepsEditor
         sopId={sop.id}
         videoUrl={sop.videoUrl}

@@ -9,6 +9,7 @@ const publicPaths = [
   "/signup",
   "/api/auth",
   "/api/auth/signup",
+  "/api/share",
 ];
 
 export async function middleware(request: NextRequest) {

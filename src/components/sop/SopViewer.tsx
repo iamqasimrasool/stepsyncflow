@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import YouTubePlayer, { YouTubePlayerHandle } from "@/components/YouTubePlayer";
 import HeaderSetter from "@/components/layout/HeaderSetter";
 import { cn } from "@/lib/utils";
+import SopComments from "@/components/sop/SopComments";
 
 type Step = {
   id: string;
@@ -21,7 +22,13 @@ type Sop = {
   steps: Step[];
 };
 
-export default function SopViewer({ sop }: { sop: Sop }) {
+export default function SopViewer({
+  sop,
+  enableComments = true,
+}: {
+  sop: Sop;
+  enableComments?: boolean;
+}) {
   const playerRef = useRef<YouTubePlayerHandle>(null);
   const [activeStepId, setActiveStepId] = useState<string | null>(
     sop.steps[0]?.id ?? null
@@ -67,6 +74,9 @@ export default function SopViewer({ sop }: { sop: Sop }) {
     setActiveStepId(step.id);
   };
 
+  const getCurrentTime = () =>
+    Math.floor(playerRef.current?.getCurrentTime() ?? 0);
+
   return (
     <div className="grid h-full gap-6 overflow-hidden md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)]">
       <HeaderSetter title={sop.title} subtitle={sop.summary} />
@@ -101,10 +111,20 @@ export default function SopViewer({ sop }: { sop: Sop }) {
           </button>
         ))}
       </div>
-      <div className="order-1 md:order-2">
+      <div className="order-1 flex h-full flex-col gap-4 overflow-y-auto md:order-2 md:pr-2">
         <div className="glass-panel sticky top-20 rounded-2xl p-3 md:static md:border-0 md:bg-transparent md:p-0 md:shadow-none">
           <YouTubePlayer ref={playerRef} videoUrl={sop.videoUrl} />
         </div>
+        {enableComments && (
+          <SopComments
+            sopId={sop.id}
+            getCurrentTime={getCurrentTime}
+            onSeek={(seconds) => {
+              playerRef.current?.seekTo(seconds);
+              playerRef.current?.playVideo();
+            }}
+          />
+        )}
       </div>
     </div>
   );

@@ -49,6 +49,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           name: user.name,
           email: user.email,
+          avatarUrl: user.avatarUrl,
           role: user.role,
           orgId: user.orgId,
           departmentIds: user.departments.map((dept) => dept.departmentId),
@@ -63,6 +64,7 @@ export const authOptions: NextAuthOptions = {
         token.orgId = (user as { orgId: string }).orgId;
         token.role = (user as { role: Role }).role;
         token.departmentIds = (user as { departmentIds: string[] }).departmentIds;
+        token.avatarUrl = (user as { avatarUrl?: string | null }).avatarUrl ?? null;
       }
       return token;
     },
@@ -72,6 +74,7 @@ export const authOptions: NextAuthOptions = {
         session.user.orgId = token.orgId as string;
         session.user.role = token.role as Role;
         session.user.departmentIds = (token.departmentIds as string[]) ?? [];
+        session.user.avatarUrl = (token.avatarUrl as string | null) ?? null;
       }
       return session;
     },

@@ -8,6 +8,7 @@ declare module "next-auth" {
       orgId: string;
       role: Role;
       departmentIds: string[];
+      avatarUrl?: string | null;
     } & DefaultSession["user"];
   }
 
@@ -16,6 +17,7 @@ declare module "next-auth" {
     orgId: string;
     role: Role;
     departmentIds: string[];
+    avatarUrl?: string | null;
   }
 }
 
@@ -25,5 +27,6 @@ declare module "next-auth/jwt" {
     orgId?: string;
     role?: Role;
     departmentIds?: string[];
+    avatarUrl?: string | null;
   }
 }

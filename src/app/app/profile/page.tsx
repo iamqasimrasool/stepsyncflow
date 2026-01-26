@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import SignOutButton from "@/components/auth/SignOutButton";
 import { requireSessionUser } from "@/lib/auth";
+import ProfileForm from "@/components/profile/ProfileForm";
 
 export default async function ProfilePage() {
   const user = await requireSessionUser();
@@ -25,6 +26,14 @@ export default async function ProfilePage() {
               <p className="font-medium">{user.role}</p>
             </div>
           </div>
+          <ProfileForm
+            initial={{
+              name: user.name ?? null,
+              email: user.email ?? "",
+              avatarUrl: user.avatarUrl ?? null,
+              role: user.role,
+            }}
+          />
           <SignOutButton />
         </CardContent>
       </Card>
