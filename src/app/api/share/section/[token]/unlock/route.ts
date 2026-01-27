@@ -31,6 +31,8 @@ export async function POST(request: Request, { params }: Params) {
   response.cookies.set(`section_share_access_${token}`, "true", {
     httpOnly: true,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
     maxAge: 60 * 60 * 24 * 30,
   });
 

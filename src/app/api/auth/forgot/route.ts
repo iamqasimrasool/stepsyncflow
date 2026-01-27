@@ -3,12 +3,22 @@ import { createHash, randomBytes } from "crypto";
 import { db } from "@/lib/db";
 import { forgotPasswordSchema } from "@/lib/validators";
 import { getAppUrl, isEmailConfigured, sendResetEmail } from "@/lib/email";
+import { rateLimitRequest } from "@/lib/rateLimit";
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
 export async function POST(request: Request) {
+  const rateLimitResponse = rateLimitRequest(request, {
+    windowMs: 60_000,
+    max: 5,
+    keyPrefix: "auth:forgot",
+  });
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   const body = await request.json();
   const parsed = forgotPasswordSchema.safeParse(body);
   if (!parsed.success) {

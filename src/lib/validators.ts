@@ -1,6 +1,15 @@
 import { z } from "zod";
 import { Role, VideoType } from "@prisma/client";
 
+const httpUrl = z.string().url().refine((value) => {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}, "Invalid URL");
+
 export const signupSchema = z.object({
   orgName: z.string().min(2),
   name: z.string().min(2),
@@ -28,7 +37,7 @@ export const sopSchema = z.object({
   departmentId: z.string().min(1),
   sectionId: z.string().min(1).optional().nullable(),
   videoType: z.nativeEnum(VideoType).default(VideoType.YOUTUBE),
-  videoUrl: z.string().min(3),
+  videoUrl: httpUrl,
   isPublished: z.boolean().optional(),
 });
 
@@ -119,9 +128,5 @@ export const userUpdateSchema = z.object({
 
 export const profileUpdateSchema = z.object({
   name: z.string().min(2).optional(),
-  avatarUrl: z
-    .string()
-    .url()
-    .optional()
-    .nullable(),
+  avatarUrl: httpUrl.optional().nullable(),
 });

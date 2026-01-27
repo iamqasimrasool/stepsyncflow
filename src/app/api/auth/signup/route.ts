@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { db } from "@/lib/db";
 import { signupSchema } from "@/lib/validators";
-import { Role } from "@prisma/client";
+import { rateLimitRequest } from "@/lib/rateLimit";
+import { Prisma, Role } from "@prisma/client";
 
 function slugify(value: string) {
   return value
@@ -12,6 +13,15 @@ function slugify(value: string) {
 }
 
 export async function POST(request: Request) {
+  const rateLimitResponse = rateLimitRequest(request, {
+    windowMs: 60_000,
+    max: 5,
+    keyPrefix: "auth:signup",
+  });
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   const body = await request.json();
   const parsed = signupSchema.safeParse(body);
   if (!parsed.success) {
@@ -54,42 +64,56 @@ export async function POST(request: Request) {
     "Finance",
   ];
 
-  const result = await db.$transaction(async (tx) => {
-    const org = await tx.organization.create({
-      data: {
-        name: orgName,
-        slug,
-      },
+  let result: { org: { id: string }; user: { id: string } };
+  try {
+    result = await db.$transaction(async (tx) => {
+      const org = await tx.organization.create({
+        data: {
+          name: orgName,
+          slug,
+        },
+      });
+
+      const departments = await Promise.all(
+        defaultDepartments.map((dept) =>
+          tx.department.create({
+            data: { name: dept, orgId: org.id },
+          })
+        )
+      );
+
+      const user = await tx.user.create({
+        data: {
+          orgId: org.id,
+          name,
+          email: normalizedEmail,
+          passwordHash,
+          role: Role.OWNER,
+        },
+      });
+
+      await Promise.all(
+        departments.map((dept) =>
+          tx.userDepartment.create({
+            data: { userId: user.id, departmentId: dept.id },
+          })
+        )
+      );
+
+      return { org, user };
     });
-
-    const departments = await Promise.all(
-      defaultDepartments.map((dept) =>
-        tx.department.create({
-          data: { name: dept, orgId: org.id },
-        })
-      )
-    );
-
-    const user = await tx.user.create({
-      data: {
-        orgId: org.id,
-        name,
-        email: normalizedEmail,
-        passwordHash,
-        role: Role.OWNER,
-      },
-    });
-
-    await Promise.all(
-      departments.map((dept) =>
-        tx.userDepartment.create({
-          data: { userId: user.id, departmentId: dept.id },
-        })
-      )
-    );
-
-    return { org, user };
-  });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "Email or organization already exists." },
+        { status: 409 }
+      );
+    }
+    throw error;
+  }
 
   return NextResponse.json({
     orgId: result.org.id,

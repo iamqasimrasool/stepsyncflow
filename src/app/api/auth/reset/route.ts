@@ -3,12 +3,22 @@ import { createHash } from "crypto";
 import bcrypt from "bcrypt";
 import { db } from "@/lib/db";
 import { resetPasswordSchema } from "@/lib/validators";
+import { rateLimitRequest } from "@/lib/rateLimit";
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
 export async function POST(request: Request) {
+  const rateLimitResponse = rateLimitRequest(request, {
+    windowMs: 60_000,
+    max: 5,
+    keyPrefix: "auth:reset",
+  });
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   const body = await request.json();
   const parsed = resetPasswordSchema.safeParse(body);
   if (!parsed.success) {
