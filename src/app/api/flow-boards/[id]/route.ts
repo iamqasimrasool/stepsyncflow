@@ -56,12 +56,18 @@ export async function PUT(request: Request, { params }: RouteParams) {
     files?: Record<string, unknown> | null;
   };
 
+  const toJsonInput = (value: unknown) => {
+    if (value === undefined) return undefined;
+    if (value === null) return Prisma.JsonNull;
+    return value as Prisma.InputJsonValue;
+  };
+
   const board = await db.flowBoard.updateMany({
     where: { id: resolvedParams.id, orgId: user.orgId, ownerId: user.id },
     data: {
-      elements: payload.elements ?? Prisma.JsonNull,
-      appState: payload.appState ?? Prisma.JsonNull,
-      files: payload.files ?? Prisma.JsonNull,
+      elements: toJsonInput(payload.elements),
+      appState: toJsonInput(payload.appState),
+      files: toJsonInput(payload.files),
     },
   });
 
