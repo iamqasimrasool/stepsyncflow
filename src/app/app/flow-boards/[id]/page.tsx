@@ -1,9 +1,10 @@
-import type { ExcalidrawElement } from "@excalidraw/excalidraw/types";
 import { notFound } from "next/navigation";
 import FlowBoardCanvas from "@/components/flow/FlowBoardCanvas";
 import { db } from "@/lib/db";
 import { requireAdminUser } from "@/lib/guards";
 import { isOrgWide } from "@/lib/rbac";
+
+type ExcalidrawElement = Record<string, unknown>;
 
 type PageProps = {
   params: { id: string } | Promise<{ id: string }>;

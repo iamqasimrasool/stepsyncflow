@@ -94,8 +94,8 @@ export const flowBoardCreateSchema = z.object({
 
 export const flowBoardContentSchema = z.object({
   elements: z.array(z.unknown()).optional().nullable(),
-  appState: z.record(z.unknown()).optional().nullable(),
-  files: z.record(z.unknown()).optional().nullable(),
+  appState: z.record(z.string(), z.unknown()).optional().nullable(),
+  files: z.record(z.string(), z.unknown()).optional().nullable(),
 });
 
 export const sopCommentSchema = z.object({

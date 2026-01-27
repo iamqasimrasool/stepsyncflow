@@ -24,7 +24,7 @@ type ResetValues = z.infer<typeof formSchema>;
 
 export default function ResetPasswordForm() {
   const searchParams = useSearchParams();
-  const token = useMemo(() => searchParams.get("token") ?? "", [searchParams]);
+  const token = useMemo(() => searchParams?.get("token") ?? "", [searchParams]);
   const [loading, setLoading] = useState(false);
   const form = useForm<ResetValues>({
     resolver: zodResolver(formSchema),

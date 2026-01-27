@@ -13,6 +13,7 @@ const baseLinks = [
 
 export default function MobileNav({ user }: { user: SessionUser }) {
   const pathname = usePathname();
+  const currentPath = pathname ?? "";
   const links = [...baseLinks];
   if (canAccessAdmin(user)) {
     links.splice(1, 0, {
@@ -33,7 +34,7 @@ export default function MobileNav({ user }: { user: SessionUser }) {
         {links.map((link) => {
           const Icon = link.icon;
           const isActive =
-            pathname === link.href || pathname.startsWith(`${link.href}/`);
+            currentPath === link.href || currentPath.startsWith(`${link.href}/`);
           return (
             <Link
               key={link.href}

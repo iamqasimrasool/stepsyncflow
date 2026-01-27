@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import type {
   ExcalidrawImperativeAPI,
   ExcalidrawInitialDataState,
-  ExcalidrawElement,
+  BinaryFiles,
 } from "@excalidraw/excalidraw/types";
 import dynamic from "next/dynamic";
 import { Link2, Save } from "lucide-react";
@@ -27,12 +27,21 @@ type SopItem = {
   departmentName?: string | null;
 };
 
+type BoardElement = {
+  id?: string;
+  type?: string;
+  isDeleted?: boolean;
+  link?: string;
+} & Record<string, unknown>;
+
+type BoardFiles = Record<string, unknown>;
+
 type FlowBoardCanvasProps = {
   boardId: string;
   boardName: string;
-  initialElements: ExcalidrawElement[];
+  initialElements: BoardElement[];
   initialAppState: Record<string, unknown> | null;
-  initialFiles: Record<string, unknown> | null;
+  initialFiles: BoardFiles | null;
   initialUpdatedAt?: string | null;
   sops: SopItem[];
 };
@@ -51,9 +60,9 @@ export default function FlowBoardCanvas({
   const [excalidrawApi, setExcalidrawApi] = useState<ExcalidrawImperativeAPI | null>(
     null
   );
-  const elementsRef = useRef<ExcalidrawElement[]>(initialElements);
+  const elementsRef = useRef<BoardElement[]>(initialElements);
   const appStateRef = useRef<Record<string, unknown> | null>(initialAppState);
-  const filesRef = useRef<Record<string, unknown> | null>(initialFiles);
+  const filesRef = useRef<BoardFiles | null>(initialFiles);
   const [selectedElementIds, setSelectedElementIds] = useState<
     Record<string, boolean>
   >({});
@@ -67,12 +76,14 @@ export default function FlowBoardCanvas({
 
   const initialData = useMemo<ExcalidrawInitialDataState>(
     () => ({
-      elements: initialElements,
+      elements: initialElements as unknown as ExcalidrawInitialDataState["elements"],
       appState: {
         ...(initialAppState ?? {}),
         gridModeEnabled: true,
       },
-      files: initialFiles ?? undefined,
+      files: initialFiles
+        ? (initialFiles as unknown as BinaryFiles)
+        : undefined,
     }),
     [initialAppState, initialElements, initialFiles]
   );
@@ -85,8 +96,9 @@ export default function FlowBoardCanvas({
     return elementsRef.current.find((element) => element.id === selectedId) ?? null;
   }, [selectedElementIds]);
 
+  const selectedType = selectedElement?.type;
   const canLinkSelected =
-    selectedElement && linkableTypes.has(selectedElement.type) && !selectedElement.isDeleted;
+    !!selectedType && linkableTypes.has(selectedType) && !selectedElement?.isDeleted;
 
   const handleSave = useCallback(async () => {
     setIsSaving(true);
@@ -120,7 +132,10 @@ export default function FlowBoardCanvas({
       const updatedElements = elementsRef.current.map((element) =>
         element.id === selectedElement.id ? { ...element, link } : element
       );
-      excalidrawApi?.updateScene({ elements: updatedElements });
+      excalidrawApi?.updateScene({
+        elements:
+          updatedElements as unknown as ExcalidrawInitialDataState["elements"],
+      });
       setLinkModalOpen(false);
       setLinkSearch("");
       toast.success("Workflow linked");
@@ -165,7 +180,7 @@ export default function FlowBoardCanvas({
             initialData={initialData}
             excalidrawAPI={(api) => setExcalidrawApi((prev) => prev ?? api)}
             onChange={(nextElements, nextAppState, nextFiles) => {
-              elementsRef.current = nextElements as ExcalidrawElement[];
+              elementsRef.current = [...nextElements] as unknown as BoardElement[];
               appStateRef.current = {
                 gridModeEnabled: nextAppState.gridModeEnabled,
                 viewBackgroundColor: nextAppState.viewBackgroundColor,

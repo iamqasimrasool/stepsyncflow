@@ -25,6 +25,7 @@ const baseLinks = [{ href: "/app", label: "Home", icon: LayoutGrid }];
 
 export default function SidebarNav({ user }: { user: SessionUser }) {
   const pathname = usePathname();
+  const currentPath = pathname ?? "";
   const [pinned, setPinned] = useState(false);
   const [hovering, setHovering] = useState(false);
 
@@ -105,7 +106,7 @@ export default function SidebarNav({ user }: { user: SessionUser }) {
         {links.map((link) => {
           const Icon = link.icon;
           const isActive =
-            pathname === link.href || pathname.startsWith(`${link.href}/`);
+            currentPath === link.href || currentPath.startsWith(`${link.href}/`);
           return (
             <Link
               key={link.href}

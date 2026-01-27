@@ -19,7 +19,7 @@ type LoginValues = {
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextUrl = searchParams.get("next") ?? "/app";
+  const nextUrl = searchParams?.get("next") ?? "/app";
   const [loading, setLoading] = useState(false);
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
