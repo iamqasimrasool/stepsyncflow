@@ -14,6 +14,7 @@
     "db:seed": "prisma db seed"
   },
   "dependencies": {
+    "@excalidraw/excalidraw": "^0.18.0",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.19.2",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -32,6 +33,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.1",
+    "reactflow": "^11.11.4",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "zod": "^4.3.6"

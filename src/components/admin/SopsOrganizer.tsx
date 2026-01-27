@@ -3,8 +3,15 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import SectionShareLinkManager from "@/components/admin/SectionShareLinkManager";
 
@@ -35,6 +42,11 @@ export default function SopsOrganizer({
   );
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [savingSection, setSavingSection] = useState(false);
+  const [activeSop, setActiveSop] = useState<Sop | null>(null);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [renameTitle, setRenameTitle] = useState("");
+  const [updatingSop, setUpdatingSop] = useState(false);
 
   const departmentSections = useMemo(
     () =>
@@ -178,6 +190,81 @@ export default function SopsOrganizer({
     }
   };
 
+  const openRenameSop = (sop: Sop) => {
+    setActiveSop(sop);
+    setRenameTitle(sop.title);
+    setRenameOpen(true);
+  };
+
+  const openDeleteSop = (sop: Sop) => {
+    setActiveSop(sop);
+    setDeleteOpen(true);
+  };
+
+  const handleRenameSop = async () => {
+    if (!activeSop || renameTitle.trim().length < 2) return;
+    setUpdatingSop(true);
+    try {
+      const res = await fetch(`/api/sops/${activeSop.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: renameTitle.trim() }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setSops((prev) =>
+        prev.map((sop) =>
+          sop.id === activeSop.id ? { ...sop, title: renameTitle.trim() } : sop
+        )
+      );
+      toast.success("Flow renamed");
+      setRenameOpen(false);
+      setActiveSop(null);
+    } catch {
+      toast.error("Could not rename flow");
+    } finally {
+      setUpdatingSop(false);
+    }
+  };
+
+  const handleDeleteSop = async () => {
+    if (!activeSop) return;
+    setUpdatingSop(true);
+    try {
+      const res = await fetch(`/api/sops/${activeSop.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed");
+      setSops((prev) => prev.filter((sop) => sop.id !== activeSop.id));
+      toast.success("Flow deleted");
+      setDeleteOpen(false);
+      setActiveSop(null);
+    } catch {
+      toast.error("Could not delete flow");
+    } finally {
+      setUpdatingSop(false);
+    }
+  };
+
+  const renderSopActions = (sop: Sop) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => openRenameSop(sop)}>
+          <Pencil className="mr-2 h-4 w-4" />
+          Rename
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => openDeleteSop(sop)}>
+          <Trash2 className="mr-2 h-4 w-4" />
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   const hasAnySops = departmentSops.length > 0;
 
   return (
@@ -284,6 +371,7 @@ export default function SopsOrganizer({
                     >
                       <ChevronDown className="h-4 w-4" />
                     </Button>
+                  {renderSopActions(sop)}
                     <Button asChild variant="outline" size="sm">
                       <Link href={`/app/admin/sops/${sop.id}/edit`}>Edit</Link>
                     </Button>
@@ -345,6 +433,7 @@ export default function SopsOrganizer({
                   >
                     <ChevronDown className="h-4 w-4" />
                   </Button>
+                  {renderSopActions(sop)}
                   <Button asChild variant="outline" size="sm">
                     <Link href={`/app/admin/sops/${sop.id}/edit`}>Edit</Link>
                   </Button>
@@ -357,6 +446,51 @@ export default function SopsOrganizer({
           </div>
         </div>
       )}
+
+      <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Rename flow</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Flow name"
+              value={renameTitle}
+              onChange={(event) => setRenameTitle(event.target.value)}
+            />
+            <div className="flex justify-end">
+              <Button
+                onClick={handleRenameSop}
+                disabled={renameTitle.trim().length < 2 || updatingSop}
+              >
+                {updatingSop ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete flow</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 text-sm">
+            <p>
+              This will permanently delete{" "}
+              <span className="font-semibold">{activeSop?.title}</span>.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setDeleteOpen(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteSop} disabled={updatingSop}>
+                {updatingSop ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

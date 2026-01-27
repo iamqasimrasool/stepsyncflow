@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Route, Shield } from "lucide-react";
+import { LayoutGrid, Route, Shield, Workflow } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { canAccessAdmin, type SessionUser } from "@/lib/rbac";
 
@@ -19,6 +19,11 @@ export default function MobileNav({ user }: { user: SessionUser }) {
       href: "/app/admin/sops",
       label: "Flows",
       icon: Route,
+    });
+    links.splice(2, 0, {
+      href: "/app/flow-boards",
+      label: "Flow Boards",
+      icon: Workflow,
     });
   }
 

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { NextApiRequest } from "next";
 
 type Bucket = {
   count: number;
@@ -50,6 +51,47 @@ export function rateLimitRequest(request: Request, options: RateLimitOptions) {
     );
     response.headers.set("Retry-After", retryAfter.toString());
     return response;
+  }
+
+  return null;
+}
+
+function getHeaderValue(value: string | string[] | undefined) {
+  if (!value) return null;
+  return Array.isArray(value) ? value[0] ?? null : value;
+}
+
+function getRequestIpFromApi(request: NextApiRequest) {
+  const forwardedFor = getHeaderValue(request.headers["x-forwarded-for"]);
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0]?.trim() ?? "unknown";
+  }
+  return (
+    getHeaderValue(request.headers["cf-connecting-ip"]) ||
+    getHeaderValue(request.headers["x-real-ip"]) ||
+    "unknown"
+  );
+}
+
+export function rateLimitApiRequest(request: NextApiRequest, options: RateLimitOptions) {
+  const now = Date.now();
+  const ip = getRequestIpFromApi(request);
+  const key = `${options.keyPrefix ?? "rate"}:${ip}`;
+
+  const existing = buckets.get(key);
+  if (!existing || existing.resetAt <= now) {
+    buckets.set(key, { count: 1, resetAt: now + options.windowMs });
+    return null;
+  }
+
+  existing.count += 1;
+  if (existing.count > options.max) {
+    const retryAfter = Math.max(1, Math.ceil((existing.resetAt - now) / 1000));
+    return {
+      status: 429,
+      body: { error: "Too many requests. Please try again shortly." },
+      headers: { "Retry-After": retryAfter.toString() },
+    };
   }
 
   return null;

@@ -88,6 +88,16 @@ export const reorderSopsSchema = z.object({
   ),
 });
 
+export const flowBoardCreateSchema = z.object({
+  name: z.string().min(1),
+});
+
+export const flowBoardContentSchema = z.object({
+  elements: z.array(z.unknown()).optional().nullable(),
+  appState: z.record(z.unknown()).optional().nullable(),
+  files: z.record(z.unknown()).optional().nullable(),
+});
+
 export const sopCommentSchema = z.object({
   body: z.string().min(1),
   timestamp: z.number().int().nonnegative(),

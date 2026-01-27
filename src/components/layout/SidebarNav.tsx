@@ -3,7 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, LayoutGrid, Route, Settings, Shield, Users } from "lucide-react";
+import {
+  Building2,
+  LayoutGrid,
+  Route,
+  Settings,
+  Shield,
+  Users,
+  Workflow,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   canAccessAdmin,
@@ -38,6 +46,11 @@ export default function SidebarNav({ user }: { user: SessionUser }) {
         href: "/app/admin/sops",
         label: "Flows",
         icon: Route,
+      });
+      items.push({
+        href: "/app/flow-boards",
+        label: "Flow Boards",
+        icon: Workflow,
       });
     }
     items.push({
