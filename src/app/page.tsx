@@ -14,6 +14,12 @@ export default function Home() {
             StepSync Flow
           </Link>
           <div className="flex items-center gap-3">
+            <Link href="/how-to-use" className="text-sm text-muted-foreground">
+              How to use
+            </Link>
+            <Link href="/pricing" className="text-sm text-muted-foreground">
+              Pricing
+            </Link>
             <Link href="/login" className="text-sm text-muted-foreground">
               Log in
             </Link>
@@ -100,9 +106,17 @@ export default function Home() {
         <footer className="border-t pt-8 text-sm text-muted-foreground">
           <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
             <p>© 2026 StepSync Flow. All rights reserved.</p>
-            <Link href="/terms" className="underline">
-              Terms of Service
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/terms" className="underline">
+                Terms of Service
+              </Link>
+              <Link href="/privacy" className="underline">
+                Privacy Policy
+              </Link>
+              <Link href="/refund" className="underline">
+                Refund Policy
+              </Link>
+            </div>
           </div>
         </footer>
       </main>
