@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { getSessionUser } from "@/lib/auth";
 import { canAccessAdmin } from "@/lib/rbac";
 
@@ -58,9 +59,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
   const board = await db.flowBoard.updateMany({
     where: { id: resolvedParams.id, orgId: user.orgId, ownerId: user.id },
     data: {
-      elements: payload.elements ?? null,
-      appState: payload.appState ?? null,
-      files: payload.files ?? null,
+      elements: payload.elements ?? Prisma.JsonNull,
+      appState: payload.appState ?? Prisma.JsonNull,
+      files: payload.files ?? Prisma.JsonNull,
     },
   });
 
