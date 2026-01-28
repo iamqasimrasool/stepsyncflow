@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import {
   Building2,
   LayoutGrid,
+  Pin,
+  PinOff,
   Route,
   Settings,
   Shield,
@@ -83,25 +85,36 @@ export default function SidebarNav({ user }: { user: SessionUser }) {
     return items;
   }, [user]);
 
-  const collapsed = !pinned && !hovering;
+  const expanded = pinned || hovering;
 
   return (
     <aside
       className={cn(
-        "sticky top-24 hidden h-[calc(100vh-7rem)] flex-col gap-2 transition-all md:flex",
-        collapsed ? "w-16" : "w-56"
+        "sticky top-24 hidden h-[calc(100vh-7rem)] flex-col gap-2 md:flex",
+        pinned ? "w-56" : "w-16"
       )}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
-      <nav className="rounded-xl border bg-background p-2">
+      <nav
+        className={cn(
+          "rounded-xl border bg-background p-2 transition-all",
+          expanded ? "w-56" : "w-16",
+          !pinned && hovering && "absolute left-0 top-0 z-30 shadow-lg"
+        )}
+      >
         <button
           type="button"
           onClick={() => setPinned((prev) => !prev)}
-          className="mb-2 flex w-full items-center justify-center rounded-lg border px-2 py-2 text-xs text-muted-foreground hover:bg-muted"
+          className={cn(
+            "mb-2 flex w-full items-center gap-2 rounded-lg border px-2 py-2 text-xs text-muted-foreground hover:bg-muted",
+            expanded ? "justify-start" : "justify-center"
+          )}
           aria-pressed={pinned}
+          aria-label={pinned ? "Unpin sidebar" : "Pin sidebar"}
         >
-          {pinned ? "Unpin" : "Pin"}
+          {pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+          {expanded ? <span>{pinned ? "Unpin" : "Pin"}</span> : null}
         </button>
         {links.map((link) => {
           const Icon = link.icon;
@@ -114,11 +127,11 @@ export default function SidebarNav({ user }: { user: SessionUser }) {
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition hover:bg-muted",
                 isActive && "bg-muted font-medium",
-                collapsed && "justify-center px-2"
+                !expanded && "justify-center px-2"
               )}
             >
               <Icon className="h-4 w-4" />
-              {!collapsed && <span>{link.label}</span>}
+              {expanded && <span>{link.label}</span>}
             </Link>
           );
         })}
