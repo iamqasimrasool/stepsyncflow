@@ -7,7 +7,7 @@ import type {
   BinaryFiles,
 } from "@excalidraw/excalidraw/types";
 import dynamic from "next/dynamic";
-import { Link2, Save } from "lucide-react";
+import { ExternalLink, Link2, Save, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -66,13 +66,16 @@ export default function FlowBoardCanvas({
   const [selectedElementIds, setSelectedElementIds] = useState<
     Record<string, boolean>
   >({});
+  const [lastElementsUpdate, setLastElementsUpdate] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [showStylePanel, setShowStylePanel] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState(initialUpdatedAt ?? null);
   const [linkModalOpen, setLinkModalOpen] = useState(false);
   const [linkSearch, setLinkSearch] = useState("");
   const initialized = useRef(false);
   const selectedElementIdsRef = useRef<Record<string, boolean>>({});
+  const canvasRef = useRef<HTMLDivElement | null>(null);
 
   const initialData = useMemo<ExcalidrawInitialDataState>(
     () => ({
@@ -80,6 +83,8 @@ export default function FlowBoardCanvas({
       appState: {
         ...(initialAppState ?? {}),
         gridModeEnabled: true,
+        isBindingEnabled: true,
+        objectsSnapModeEnabled: true,
       },
       files: initialFiles
         ? (initialFiles as unknown as BinaryFiles)
@@ -94,11 +99,12 @@ export default function FlowBoardCanvas({
     );
     if (!selectedId) return null;
     return elementsRef.current.find((element) => element.id === selectedId) ?? null;
-  }, [selectedElementIds]);
+  }, [selectedElementIds, lastElementsUpdate]);
 
   const selectedType = selectedElement?.type;
   const canLinkSelected =
     !!selectedType && linkableTypes.has(selectedType) && !selectedElement?.isDeleted;
+  const canOpenLinkedWorkflow = !!selectedElement?.link && !selectedElement?.isDeleted;
 
   const handleSave = useCallback(async () => {
     setIsSaving(true);
@@ -175,11 +181,27 @@ export default function FlowBoardCanvas({
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="relative flex-1 overflow-hidden rounded-xl border bg-background">
+        <div
+          ref={canvasRef}
+          className="relative flex-1 overflow-hidden rounded-xl border bg-background flowboard-canvas"
+          data-style-panel={showStylePanel ? "visible" : "hidden"}
+        >
           <Excalidraw
             initialData={initialData}
             excalidrawAPI={(api) => setExcalidrawApi((prev) => prev ?? api)}
             onChange={(nextElements, nextAppState, nextFiles) => {
+              const nextSelected = nextAppState.selectedElementIds ?? {};
+              const selectedId = Object.keys(nextSelected).find((key) => nextSelected[key]);
+              const nextSelectedElement = selectedId
+                ? (nextElements as unknown as BoardElement[]).find(
+                    (element) => element.id === selectedId
+                  ) ?? null
+                : null;
+
+              if (nextSelectedElement?.link !== selectedElement?.link) {
+                setLastElementsUpdate((prev) => prev + 1);
+              }
+
               elementsRef.current = [...nextElements] as unknown as BoardElement[];
               appStateRef.current = {
                 gridModeEnabled: nextAppState.gridModeEnabled,
@@ -188,9 +210,11 @@ export default function FlowBoardCanvas({
                 scrollY: nextAppState.scrollY,
                 zoom: nextAppState.zoom,
                 theme: nextAppState.theme,
+                isBindingEnabled: true,
+                objectsSnapModeEnabled: true,
+                activeTool: nextAppState.activeTool,
               };
               filesRef.current = nextFiles as Record<string, unknown>;
-              const nextSelected = nextAppState.selectedElementIds ?? {};
               const prevSelected = selectedElementIdsRef.current;
               const selectionChanged =
                 Object.keys(nextSelected).length !==
@@ -213,20 +237,58 @@ export default function FlowBoardCanvas({
             }}
           />
 
-          {canLinkSelected ? (
-            <div className="absolute right-4 top-4 z-20 rounded-lg border bg-background/90 p-2 shadow-sm backdrop-blur">
+          <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2">
+            <div className="flex items-center gap-2 rounded-lg border bg-background/90 p-2 shadow-sm backdrop-blur">
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => setShowStylePanel((prev) => !prev)}
+              >
+                <SlidersHorizontal className="mr-2 h-4 w-4" />
+                {showStylePanel ? "Hide styles" : "Show styles"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!canLinkSelected}
                 onClick={() => setLinkModalOpen(true)}
               >
                 <Link2 className="mr-2 h-4 w-4" />
                 Link workflow
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!canOpenLinkedWorkflow}
+                onClick={() => {
+                  if (!selectedElement?.link) return;
+                  window.open(selectedElement.link, "_blank", "noreferrer");
+                }}
+              >
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Open workflow
+              </Button>
             </div>
-          ) : null}
+          </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        .flowboard-canvas[data-style-panel="hidden"] .excalidraw .sidebar,
+        .flowboard-canvas[data-style-panel="hidden"] .excalidraw .Sidebar,
+        .flowboard-canvas[data-style-panel="hidden"] .excalidraw .default-sidebar,
+        .flowboard-canvas[data-style-panel="hidden"]
+          .excalidraw
+          .default-sidebar__content,
+        .flowboard-canvas[data-style-panel="hidden"] .excalidraw [data-testid="sidebar"],
+        .flowboard-canvas[data-style-panel="hidden"] .excalidraw .App-menu__left,
+        .flowboard-canvas[data-style-panel="hidden"]
+          .excalidraw
+          .App-menu__left
+          .panelColumn {
+          display: none !important;
+        }
+      `}</style>
 
       <Dialog open={linkModalOpen} onOpenChange={setLinkModalOpen}>
         <DialogContent className="max-w-lg">
@@ -267,3 +329,4 @@ export default function FlowBoardCanvas({
     </div>
   );
 }
+
