@@ -1,30 +1,10 @@
-import Link from "next/link";
+import MarketingFooter from "@/components/marketing/MarketingFooter";
+import MarketingHeader from "@/components/marketing/MarketingHeader";
 
 export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4">
-          <Link href="/" className="text-xl font-semibold">
-            StepSync Flow
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/how-to-use" className="text-sm text-muted-foreground">
-              How to use
-            </Link>
-            <Link href="/pricing" className="text-sm text-muted-foreground">
-              Pricing
-            </Link>
-            <Link href="/login" className="text-sm text-muted-foreground">
-              Log in
-            </Link>
-            <Link href="/signup" className="text-sm font-medium">
-              Start free
-            </Link>
-          </div>
-        </div>
-      </header>
-
+      <MarketingHeader />
       <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-12">
         <h1 className="text-3xl font-semibold">Privacy Policy</h1>
         <p className="text-sm text-muted-foreground">
@@ -52,6 +32,9 @@ export default function PrivacyPolicyPage() {
           </p>
         </section>
       </main>
+      <div className="mx-auto w-full max-w-5xl px-4 pb-12">
+        <MarketingFooter />
+      </div>
     </div>
   );
 }

@@ -1,20 +1,12 @@
 import Link from "next/link";
+import MarketingFooter from "@/components/marketing/MarketingFooter";
+import MarketingHeader from "@/components/marketing/MarketingHeader";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4">
-          <Link href="/" className="text-xl font-semibold">
-            StepSync Flow
-          </Link>
-          <Link href="/pricing" className="text-sm text-muted-foreground">
-            Pricing
-          </Link>
-        </div>
-      </header>
-
+      <MarketingHeader />
       <main className="mx-auto w-full max-w-3xl px-4 py-12">
         <h1 className="text-3xl font-semibold">Terms of Service</h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -46,6 +38,9 @@ export default function TermsPage() {
           </CardContent>
         </Card>
       </main>
+      <div className="mx-auto w-full max-w-3xl px-4 pb-12">
+        <MarketingFooter />
+      </div>
     </div>
   );
 }

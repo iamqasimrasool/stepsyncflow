@@ -1,4 +1,6 @@
 import Link from "next/link";
+import MarketingFooter from "@/components/marketing/MarketingFooter";
+import MarketingHeader from "@/components/marketing/MarketingHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -8,28 +10,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
-          <Link href="/" className="text-xl font-semibold">
-            StepSync Flow
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/how-to-use" className="text-sm text-muted-foreground">
-              How to use
-            </Link>
-            <Link href="/pricing" className="text-sm text-muted-foreground">
-              Pricing
-            </Link>
-            <Link href="/login" className="text-sm text-muted-foreground">
-              Log in
-            </Link>
-            <Button asChild>
-              <Link href="/signup">Start free</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
-
+      <MarketingHeader />
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 py-12">
         <section className="relative overflow-hidden rounded-3xl border bg-muted/20">
           <div className="absolute inset-0">
@@ -103,23 +84,10 @@ export default function Home() {
             </Card>
           ))}
         </section>
-        <footer className="border-t pt-8 text-sm text-muted-foreground">
-          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-            <p>© 2026 StepSync Flow. All rights reserved.</p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/terms" className="underline">
-                Terms of Service
-              </Link>
-              <Link href="/privacy" className="underline">
-                Privacy Policy
-              </Link>
-              <Link href="/refund" className="underline">
-                Refund Policy
-              </Link>
-            </div>
-          </div>
-        </footer>
       </main>
+      <div className="mx-auto w-full max-w-6xl px-4 pb-12">
+        <MarketingFooter />
+      </div>
     </div>
   );
 }
